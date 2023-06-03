@@ -1,6 +1,7 @@
 import TelegramBot from "node-telegram-bot-api";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
+import cron from "node-cron";
 
 dotenv.config();
 
@@ -159,4 +160,17 @@ bot.onText(/\/set_limit (\d+)/, async (msg, match) => {
   await user.save();
 
   bot.sendMessage(chatId, `Your monthly limit has been set to ${limit}`);
+});
+
+// Set a daily reminder to add expense at 9PM
+cron.schedule("0 21 * * *", async () => {
+  // Find all users
+  const users = await User.find({});
+  for (let user of users) {
+    // Send a message to each user
+    bot.sendMessage(
+      user.telegramId,
+      "Don't forget to add your expenses for today!"
+    );
+  }
 });
