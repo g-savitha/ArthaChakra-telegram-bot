@@ -150,7 +150,7 @@ async function setLimitCommand(
     );
     return;
   }
-  const limit = parseInt(params[1]);
+  const limit = parseInt(params[0]);
   const user = await User.findOne({ telegramId: chatId });
   if (!user) {
     bot.sendMessage(
