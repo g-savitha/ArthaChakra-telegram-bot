@@ -1,16 +1,22 @@
-import mongoose from "../src/db";
+import mongoose, { Document, Schema, Model } from "mongoose";
+import { ICategory } from "./Category";
 
-const userSchema = new mongoose.Schema({
-  telegramId: { type: String, required: true },
+interface IUser extends Document {
+  telegramId: number;
+  balance: number;
+  monthlyLimit: number;
+  reminderTime?: string; // The '?' indicates that reminderTime can be undefined
+  categories: ICategory["_id"][];
+}
+
+const userSchema: Schema = new Schema({
+  telegramId: { type: Number, required: true, unique: true },
   balance: { type: Number, default: 0 },
   monthlyLimit: { type: Number, default: 0 },
-  reminderTime: { type: String, default: "21:00" },
-  categories: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Category",
-    },
-  ],
+  reminderTime: { type: String, default: "" },
+  categories: [{ type: Schema.Types.ObjectId, ref: "Category" }],
 });
 
-export default mongoose.model("User", userSchema);
+const User = mongoose.model("User", userSchema);
+
+export { IUser, User };

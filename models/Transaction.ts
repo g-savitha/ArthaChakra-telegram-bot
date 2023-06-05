@@ -1,15 +1,23 @@
-import mongoose from "../src/db";
+import mongoose, { Document, Schema } from "mongoose";
+import { IUser } from "./User";
+import { ICategory } from "./Category";
 
-const transactionSchema = new mongoose.Schema({
-  user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-  category: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Category",
-    required: true,
-  },
+interface ITransaction extends Document {
+  user: IUser;
+  category: ICategory;
+  transactionType: string;
+  amount: number;
+}
+
+const transactionSchema: Schema = new Schema({
+  user: { type: Schema.Types.ObjectId, ref: "User", required: true },
+  category: { type: Schema.Types.ObjectId, ref: "Category", required: true },
   transactionType: { type: String, required: true },
   amount: { type: Number, required: true },
-  created: { type: Date, default: Date.now },
 });
 
-export default mongoose.model("Transaction", transactionSchema);
+const Transaction = mongoose.model<ITransaction>(
+  "Transaction",
+  transactionSchema
+);
+export { ITransaction, Transaction };

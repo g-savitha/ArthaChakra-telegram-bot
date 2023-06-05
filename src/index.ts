@@ -1,6 +1,6 @@
 import "./bot";
 import "./reminder";
-import Category from "../models/Category";
+import { Category } from "../models/Category";
 
 // Add default categories to the DB
 async function initCategories(): Promise<void> {

@@ -1,7 +1,7 @@
 import TelegramBot, { Message } from "node-telegram-bot-api";
-import User from "../models/User";
-import Category, { ICategory } from "../models/Category";
-import Transaction from "../models/Transaction";
+import { User } from "../models/User";
+import { Category, ICategory } from "../models/Category";
+import { Transaction } from "../models/Transaction";
 
 async function startCommand(chatId: number, bot: TelegramBot): Promise<void> {
   let user = await User.findOne({ telegramId: chatId });
@@ -40,7 +40,7 @@ async function validateCategory(
   chatId: number,
   bot: TelegramBot
 ): Promise<ICategory | null> {
-  const categoryDoc = await Category.findOne({ name: category });
+  const categoryDoc = await Category.findOne<ICategory>({ name: category });
   if (!categoryDoc) {
     const categories = await Category.find({});
     let message = "Available categories:\n";
@@ -262,9 +262,34 @@ async function enableReminderCommand(
     );
     return;
   }
+  if (user.reminderTime) {
+    bot.sendMessage(
+      chatId,
+      "A reminder already exists. Please disable the current reminder first."
+    );
+    return;
+  }
   user.reminderTime = time;
   await user.save();
   bot.sendMessage(chatId, `Daily reminder has been set at ${time}`);
+}
+
+async function disableReminderCommand(chatId: number, bot: TelegramBot) {
+  const user = await User.findOne({ telegramId: chatId });
+  if (!user) {
+    bot.sendMessage(
+      chatId,
+      "You need to start the bot first by sending the /start command."
+    );
+    return;
+  }
+  if (!user.reminderTime) {
+    bot.sendMessage(chatId, "No reminder is set.");
+    return;
+  }
+  user.reminderTime = undefined;
+  await user.save();
+  bot.sendMessage(chatId, `Your reminder has been disabled.`);
 }
 
 async function unKnownCommand(chatId: number, bot: TelegramBot) {
@@ -302,7 +327,9 @@ export async function processMessage(msg: Message, bot: TelegramBot) {
     case "/enable_reminder":
       await enableReminderCommand(chatId, params, bot);
       break;
-
+    case "/disable_reminder":
+      await disableReminderCommand(chatId, bot);
+      break;
     default:
       await unKnownCommand(chatId, bot);
   }

@@ -1,13 +1,14 @@
-import mongoose from "../src/db";
-import { Document } from "mongoose";
-
-const categorySchema = new mongoose.Schema({
-  name: { type: String, required: true, unique: true },
-});
+import mongoose, { Document, Schema, Model } from "mongoose";
 
 interface ICategory extends Document {
   name: string;
   // other fields as necessary
 }
-export { ICategory };
-export default mongoose.model("Category", categorySchema);
+
+const categorySchema: Schema = new Schema({
+  name: { type: String, required: true, unique: true },
+});
+
+const Category = mongoose.model("Category", categorySchema);
+
+export { ICategory, Category };

@@ -1,6 +1,6 @@
 import cron from "node-cron";
 import bot from "./bot";
-import User from "../models/User";
+import { User } from "../models/User";
 
 // Code for sending reminder at specified time
 cron.schedule("* * * * *", async () => {
