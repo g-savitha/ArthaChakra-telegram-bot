@@ -1,3 +1,6 @@
+import dotenv from "dotenv";
+dotenv.config();
+
 import "./bot";
 import "./reminder";
 import { Category } from "../models/Category";
