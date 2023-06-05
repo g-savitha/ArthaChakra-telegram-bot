@@ -1,17 +1,20 @@
 import TelegramBot, { Message } from "node-telegram-bot-api";
 import User from "../models/User";
-import Category from "../models/Category";
+import Category, { ICategory } from "../models/Category";
 import Transaction from "../models/Transaction";
 
 async function startCommand(chatId: number, bot: TelegramBot): Promise<void> {
   let user = await User.findOne({ telegramId: chatId });
+  const defaultCategories = await Category.find({
+    name: { $in: ["Food", "Rent", "Shopping", "Salary", "Bills", "Others"] },
+  });
   if (!user) {
     user = new User({
       telegramId: chatId,
       balance: 0,
       monthlyLimit: 0,
-      reminderTime: 0,
-      categories: [],
+      reminderTime: "",
+      categories: defaultCategories.map((category) => category._id),
     });
     await user.save();
   }
@@ -32,6 +35,25 @@ async function startCommand(chatId: number, bot: TelegramBot): Promise<void> {
   );
 }
 
+async function validateCategory(
+  category: string,
+  chatId: number,
+  bot: TelegramBot
+): Promise<ICategory | null> {
+  const categoryDoc = await Category.findOne({ name: category });
+  if (!categoryDoc) {
+    const categories = await Category.find({});
+    let message = "Available categories:\n";
+    categories.forEach((category) => {
+      message += `- ${category.name}\n`;
+    });
+    message += `\nThe category "${category}" doesn't exist. Would you like to create it? Use /category ${category} to create a new category.`;
+    bot.sendMessage(chatId, message);
+    return null;
+  }
+  return categoryDoc;
+}
+
 async function creditCommand(
   chatId: number,
   params: string[],
@@ -48,7 +70,6 @@ async function creditCommand(
   const amount = parseInt(params[0]);
   const category = params.slice(1).join(" ");
   const user = await User.findOne({ telegramId: chatId });
-  const categoryD = await Category.findOne({ name: category });
 
   // Check if the user exists
   if (!user) {
@@ -59,17 +80,14 @@ async function creditCommand(
     return;
   }
   // Check if the category exists
-  if (!categoryD) {
-    bot.sendMessage(
-      chatId,
-      `The category "${category}" doesn't exist. Create it with /category ${category}.`
-    );
+  const categoryDoc = await validateCategory(category, chatId, bot);
+  if (!categoryDoc) {
     return;
   }
   // Create a new transaction
   const transaction = new Transaction({
     user: user._id,
-    category: categoryD._id,
+    category: categoryDoc._id,
     transactionType: "credit", // set the transactionType to 'credit'
     amount: amount,
   });
@@ -101,7 +119,6 @@ async function debitCommand(
   const category = params.slice(1).join(" ");
 
   const user = await User.findOne({ telegramId: chatId });
-  const categoryD = await Category.findOne({ name: category });
 
   // Check if the user exists
   if (!user) {
@@ -112,17 +129,14 @@ async function debitCommand(
     return;
   }
   // Check if the category exists
-  if (!categoryD) {
-    bot.sendMessage(
-      chatId,
-      `The category "${category}" doesn't exist. Create it with /category ${category}.`
-    );
+  const categoryDoc = await validateCategory(category, chatId, bot);
+  if (!categoryDoc) {
     return;
   }
   // Create a new transaction
   const transaction = new Transaction({
     user: user._id,
-    category: categoryD._id,
+    category: categoryDoc._id,
     transactionType: "debit", // set the transactionType to 'debit'
     amount: amount,
   });
@@ -176,6 +190,83 @@ async function getBalanceCommand(chatId: number, bot: TelegramBot) {
   }
   bot.sendMessage(chatId, `Your current balance is ${user.balance}`);
 }
+
+async function categoryCommand(
+  chatId: number,
+  params: string[],
+  bot: TelegramBot
+) {
+  if (params.length < 1) {
+    bot.sendMessage(
+      chatId,
+      "Invalid command format. It should be /category new_category_name"
+    );
+    return;
+  }
+  const categoryName = params[0];
+
+  let category = await Category.findOne({ name: categoryName });
+  if (!category) {
+    category = new Category({ name: categoryName });
+    await category.save();
+  }
+
+  const user = await User.findOne({ telegramId: chatId });
+  if (!user) {
+    bot.sendMessage(
+      chatId,
+      "You need to start the bot first by sending the /start command. "
+    );
+    return;
+  }
+  //Add category if user doesn't have it already
+  if (!user.categories.includes(category._id)) {
+    user.categories.push(category._id);
+    await user.save();
+  }
+  bot.sendMessage(chatId, `Category "${categoryName}" has been added.`);
+}
+
+// list all the available categories
+async function listCategoriesCommand(chatId: number, bot: TelegramBot) {
+  const categories = await Category.find({});
+  if (!categories || categories.length === 0) {
+    bot.sendMessage(chatId, "No categories found.");
+    return;
+  }
+  let message = "Available categories:\n";
+  categories.forEach((category) => {
+    message += `- ${category.name}\n`;
+  });
+  bot.sendMessage(chatId, message);
+}
+
+async function enableReminderCommand(
+  chatId: number,
+  params: string[],
+  bot: TelegramBot
+) {
+  if (params.length < 1) {
+    bot.sendMessage(
+      chatId,
+      "Invalid command format. It should be /enable_reminder HH:mm"
+    );
+    return;
+  }
+  const time = params[0];
+  const user = await User.findOne({ telegramId: chatId });
+  if (!user) {
+    bot.sendMessage(
+      chatId,
+      "You need to start the bot first by sending the /start command."
+    );
+    return;
+  }
+  user.reminderTime = time;
+  await user.save();
+  bot.sendMessage(chatId, `Daily reminder has been set at ${time}`);
+}
+
 async function unKnownCommand(chatId: number, bot: TelegramBot) {
   bot.sendMessage(chatId, "Unknown command.");
 }
@@ -202,6 +293,16 @@ export async function processMessage(msg: Message, bot: TelegramBot) {
     case "/get_balance":
       await getBalanceCommand(chatId, bot);
       break;
+    case "/category":
+      await categoryCommand(chatId, params, bot);
+      break;
+    case "/list":
+      await listCategoriesCommand(chatId, bot);
+      break;
+    case "/enable_reminder":
+      await enableReminderCommand(chatId, params, bot);
+      break;
+
     default:
       await unKnownCommand(chatId, bot);
   }

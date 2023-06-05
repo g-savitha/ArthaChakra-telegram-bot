@@ -4,7 +4,7 @@ const userSchema = new mongoose.Schema({
   telegramId: { type: String, required: true },
   balance: { type: Number, default: 0 },
   monthlyLimit: { type: Number, default: 0 },
-  reminderTime: { type: Number },
+  reminderTime: { type: String, default: "21:00" },
   categories: [
     {
       type: mongoose.Schema.Types.ObjectId,
