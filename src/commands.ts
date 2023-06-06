@@ -83,6 +83,56 @@ async function validateCategory(
   return categoryDoc;
 }
 
+async function checkMonthlyLimit(chatId: number, bot: TelegramBot) {
+  const user = await User.findOne({ telegramId: chatId });
+  if (!user) return;
+
+  // Get current date and check if it's a new month
+  const currentDate = new Date();
+  if (
+    currentDate.getMonth() !== user.warningResetDate.getMonth() ||
+    currentDate.getFullYear() !== user.warningResetDate.getFullYear()
+  ) {
+    // If it's a new month, reset the warning flag and update the warningResetDate
+    user.warningSent = false;
+    user.warningResetDate = currentDate;
+    user.monthlyLimit = 0;
+    await user.save();
+  }
+
+  const totalExpense = await Transaction.aggregate([
+    { $match: { user: user._id, transactionType: "debit" } },
+    { $group: { _id: null, total: { $sum: "$amount" } } },
+  ]);
+  const total = totalExpense[0] ? totalExpense[0].total : 0;
+
+  if (
+    total >= 0.9 * user.monthlyLimit &&
+    total < user.monthlyLimit &&
+    !user.warningSent
+  ) {
+    bot.sendMessage(
+      chatId,
+      `Warning: You are about to reach your monthly limit.`
+    );
+    user.warningSent = true;
+    await user.save();
+  } else if (
+    total >= user.monthlyLimit &&
+    total < 1.1 * user.monthlyLimit &&
+    !user.warningSent
+  ) {
+    bot.sendMessage(chatId, `You have reached your monthly limit.`);
+    user.warningSent = true;
+    await user.save();
+  } else if (total >= 1.1 * user.monthlyLimit && !user.warningSent) {
+    bot.sendMessage(chatId, `Warning: You have exceeded your monthly limit.`);
+    user.warningSent = true;
+    await user.save();
+  }
+}
+
+// All the Commands
 async function creditCommand(
   chatId: number,
   params: string[],
@@ -171,7 +221,7 @@ async function debitCommand(
   });
 
   await transaction.save();
-
+  await checkMonthlyLimit(chatId, bot);
   user.balance -= amount;
   await user.save();
 
@@ -322,8 +372,11 @@ async function disableReminderCommand(chatId: number, bot: TelegramBot) {
 }
 
 // TODO
-//  1. Should give a warning when monthly limit is about to reach
 // 2. Display all expenses according to category (% based)
+
+// async function showAllExpensesCommand(chatId: number, params: string[], bot: TelegramBot){
+
+// }
 
 async function unKnownCommand(chatId: number, bot: TelegramBot) {
   bot.sendMessage(chatId, "Unknown command.");
@@ -363,6 +416,9 @@ export async function processMessage(msg: Message, bot: TelegramBot) {
     case "/disable_reminder":
       await disableReminderCommand(chatId, bot);
       break;
+    // case "/show_all_expenses":
+    //   await showAllExpensesCommand(chatId,params,bot);
+    //   break;
     default:
       await unKnownCommand(chatId, bot);
   }

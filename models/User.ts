@@ -7,6 +7,8 @@ interface IUser extends Document {
   monthlyLimit: number;
   reminderTime?: string; // The '?' indicates that reminderTime can be undefined
   categories: ICategory["_id"][];
+  warningSent: boolean;
+  warningResetDate: Date;
 }
 
 const userSchema: Schema = new Schema({
@@ -15,6 +17,8 @@ const userSchema: Schema = new Schema({
   monthlyLimit: { type: Number, default: 0 },
   reminderTime: { type: String, default: "" },
   categories: [{ type: Schema.Types.ObjectId, ref: "Category" }],
+  warningSent: { type: Boolean, default: false },
+  warningResetDate: { type: Date, default: Date.now },
 });
 
 const User = mongoose.model("User", userSchema);

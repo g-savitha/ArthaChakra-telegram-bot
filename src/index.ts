@@ -16,7 +16,7 @@ async function initCategories(): Promise<void> {
     "Bills",
     "Others",
   ];
-  // for..of is compatible with async/await
+  // for..of is compatible with async/await. Better than forEach
   for (const category of defaultCategories) {
     let categoryDoc = await Category.findOne({ name: category });
     if (!categoryDoc) {
