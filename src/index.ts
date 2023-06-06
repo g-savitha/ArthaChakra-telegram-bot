@@ -16,13 +16,14 @@ async function initCategories(): Promise<void> {
     "Bills",
     "Others",
   ];
-  defaultCategories.forEach(async (category) => {
+  // for..of is compatible with async/await
+  for (const category of defaultCategories) {
     let categoryDoc = await Category.findOne({ name: category });
     if (!categoryDoc) {
       categoryDoc = new Category({ name: category });
       await categoryDoc.save();
     }
-  });
+  }
 }
 
 connectPromise
