@@ -9,10 +9,6 @@ if (!uri) {
   process.exit(1);
 }
 
-mongoose
-  .connect(uri)
-  .catch((error: Error) =>
-    console.error("Error connecting to MongoDB:", error)
-  );
+const connectPromise = mongoose.connect(uri, { socketTimeoutMS: 60000 });
 
-export default mongoose;
+export default connectPromise;

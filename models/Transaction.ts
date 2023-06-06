@@ -20,4 +20,6 @@ const Transaction = mongoose.model<ITransaction>(
   "Transaction",
   transactionSchema
 );
-export { ITransaction, Transaction };
+export { ITransaction };
+
+export default Transaction;

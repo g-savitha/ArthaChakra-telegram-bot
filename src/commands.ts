@@ -1,7 +1,7 @@
 import TelegramBot, { Message } from "node-telegram-bot-api";
-import { User } from "../models/User";
-import { Category, ICategory } from "../models/Category";
-import { Transaction } from "../models/Transaction";
+import User from "../models/User";
+import Category, { ICategory } from "../models/Category";
+import Transaction from "../models/Transaction";
 
 async function startCommand(chatId: number, bot: TelegramBot): Promise<void> {
   let user = await User.findOne({ telegramId: chatId });

@@ -3,7 +3,8 @@ dotenv.config();
 
 import "./bot";
 import "./reminder";
-import { Category } from "../models/Category";
+import connectPromise from "./db";
+import Category from "../models/Category";
 
 // Add default categories to the DB
 async function initCategories(): Promise<void> {
@@ -24,4 +25,11 @@ async function initCategories(): Promise<void> {
   });
 }
 
-initCategories();
+connectPromise
+  .then(() => {
+    console.log("Connected to MongoDB Atlas");
+    initCategories();
+  })
+  .catch((error: Error) =>
+    console.error("Error connecting to MongoDB:", error)
+  );
