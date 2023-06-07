@@ -32,8 +32,7 @@ export default async function categoryCommand(
     return;
   }
   //Add category if user doesn't have it already
-  console.log(user.categories.includes(category._id));
-  console.log(category._id);
+
   if (!user.categories.includes(category._id)) {
     user.categories.push(category._id);
     await user.save();

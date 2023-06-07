@@ -1,7 +1,6 @@
 import TelegramBot from "node-telegram-bot-api";
 
 export default async function introMessage(chatId: number, bot: TelegramBot) {
-  console.log("intro");
   bot.sendMessage(
     chatId,
     `
@@ -14,8 +13,7 @@ export default async function introMessage(chatId: number, bot: TelegramBot) {
     6. /set_limit
     7. /enable_reminder
     8. /disable_reminder
-    9. /show_all_expenses
-
+    
     Now, let me explain what each command does:
 
     1. /credit: This command is used to add credit to your balance. 
@@ -43,6 +41,7 @@ export default async function introMessage(chatId: number, bot: TelegramBot) {
 }
 
 // TODO:
+// 9. /show_all_expenses
 // 9. /show_all_expenses: This command displays a summary of your monthly expenses as a percentage, broken down by category.
 // For example, if you've spent 50% of your total expenses on 'Food', 30% on 'Rent', and 20% on 'Bills', this command
 // will present that information to you in an easy-to-understand format. This can help you understand your spending habits

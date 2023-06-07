@@ -25,6 +25,5 @@ export default async function startCommand(
     chatId,
     `Welcome to ArthaChakra! I'm Kubera, your personal bot here to assist you in managing and monitoring your expenses effectively.`
   );
-  console.log("before intro");
   await introMessage(chatId, bot);
 }
