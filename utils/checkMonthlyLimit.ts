@@ -16,7 +16,6 @@ export default async function checkMonthlyLimit(
     currentDate.getFullYear() !== user.warningResetDate.getFullYear()
   ) {
     // If it's a new month, reset the warning flag and update the warningResetDate
-    user.warningSent = false;
     user.warningResetDate = currentDate;
     await user.save();
   }
@@ -27,31 +26,20 @@ export default async function checkMonthlyLimit(
     { $group: { _id: null, total: { $sum: "$amount" } } },
   ]);
   const total = totalExpense[0] ? Number(totalExpense[0].total) : 0;
-  if (
-    total >= 0.9 * user.monthlyLimit &&
-    total < user.monthlyLimit &&
-    !user.warningSent
-  ) {
+  if (total >= 0.9 * user.monthlyLimit && total < user.monthlyLimit) {
     console.log("1");
     bot.sendMessage(
       chatId,
       `Warning: You are about to reach your monthly limit.`
     );
-    user.warningSent = true;
     await user.save();
-  } else if (
-    total >= user.monthlyLimit &&
-    total < 1.1 * user.monthlyLimit &&
-    !user.warningSent
-  ) {
+  } else if (total >= user.monthlyLimit && total < 1.1 * user.monthlyLimit) {
     console.log("2");
     bot.sendMessage(chatId, `You have reached your monthly limit.`);
-    user.warningSent = true;
     await user.save();
-  } else if (total >= 1.1 * user.monthlyLimit && !user.warningSent) {
+  } else if (total >= 1.1 * user.monthlyLimit) {
     console.log("3");
     bot.sendMessage(chatId, `Warning: You have exceeded your monthly limit.`);
-    user.warningSent = true;
     await user.save();
   }
 }

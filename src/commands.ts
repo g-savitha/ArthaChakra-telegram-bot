@@ -8,6 +8,7 @@ import categoryCommand from "../commands/categoryCommand";
 import enableReminderCommand from "../commands/enableReminderCommand";
 import disableReminderCommand from "../commands/disableReminderCommand";
 import listCategoriesCommand from "../commands/listCategoriesCommand";
+// import showAllExpensesCommand from "../commands/showAllExpensesCommand";
 import unKnownCommand from "../commands/unknownCommand";
 
 export async function processMessage(
@@ -47,6 +48,10 @@ export async function processMessage(
     case "/disable_reminder":
       await disableReminderCommand(chatId, bot);
       break;
+    // case "/show_all_expenses":
+    //   await showAllExpensesCommand(chatId, bot);
+    //   break;
+
     default:
       await unKnownCommand(chatId, bot);
   }

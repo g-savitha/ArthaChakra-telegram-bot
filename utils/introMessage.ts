@@ -38,11 +38,12 @@ export default async function introMessage(chatId: number, bot: TelegramBot) {
        For example, '/enable_reminder 21:30' will set a reminder at 21:30 or 9:30 PM.
     
     8. /disable_reminder: Use this command to disable the daily reminder.
-    
-    9. /show_all_expenses: This command displays a summary of your monthly expenses as a percentage, broken down by category. 
-    For example, if you've spent 50% of your total expenses on 'Food', 30% on 'Rent', and 20% on 'Bills', this command 
-    will present that information to you in an easy-to-understand format. This can help you understand your spending habits 
-    better.
  `
   );
 }
+
+// TODO:
+// 9. /show_all_expenses: This command displays a summary of your monthly expenses as a percentage, broken down by category.
+// For example, if you've spent 50% of your total expenses on 'Food', 30% on 'Rent', and 20% on 'Bills', this command
+// will present that information to you in an easy-to-understand format. This can help you understand your spending habits
+// better.
