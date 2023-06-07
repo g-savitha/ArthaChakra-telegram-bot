@@ -1,35 +1,23 @@
 import dotenv from "dotenv";
+import { Message } from "node-telegram-bot-api";
+
+import connectPromise from "./db";
+import { initCategories } from "../utils/initCategories";
+import { processMessage } from "./commands";
+import bot from "./bot";
+import "./reminder";
+
 dotenv.config();
 
-import "./bot";
-import "./reminder";
-import connectPromise from "./db";
-import Category from "../models/Category";
-
-// Add default categories to the DB
-async function initCategories(): Promise<void> {
-  const defaultCategories = [
-    "Food",
-    "Rent",
-    "Shopping",
-    "Salary",
-    "Bills",
-    "Others",
-  ];
-  // for..of is compatible with async/await. Better than forEach
-  for (const category of defaultCategories) {
-    let categoryDoc = await Category.findOne({ name: category });
-    if (!categoryDoc) {
-      categoryDoc = new Category({ name: category });
-      await categoryDoc.save();
-    }
-  }
-}
-
+// Connect to DB
 connectPromise
   .then(() => {
     console.log("Connected to MongoDB Atlas");
     initCategories();
+    // Setting up a listener for incoming messages
+    bot.on("message", (msg: Message) => {
+      processMessage(msg, bot);
+    });
   })
   .catch((error: Error) =>
     console.error("Error connecting to MongoDB:", error)
