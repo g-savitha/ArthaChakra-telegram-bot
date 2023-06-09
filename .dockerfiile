@@ -1,0 +1,14 @@
+# Use the official RabbitMQ Docker image as the base image
+FROM rabbitmq:latest
+
+# Copy any additional configuration files to the container
+COPY rabbitmq.conf /etc/rabbitmq/rabbitmq.conf
+
+# Expose the necessary ports for RabbitMQ
+EXPOSE 5672 15672
+
+# Set any environment variables required for RabbitMQ configuration
+ENV RABBITMQ_VERSION=3.10.2
+
+# Start the RabbitMQ server
+CMD ["rabbitmq-server"]
