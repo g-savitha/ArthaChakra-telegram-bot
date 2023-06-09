@@ -13,11 +13,11 @@ export default async function disbleReminderCommand(
     );
     return;
   }
-  if (!user.reminderTime) {
+  if (!user.reminderEnabled) {
     bot.sendMessage(chatId, "No reminder is set.");
     return;
   }
-  user.reminderTime = undefined;
+  user.reminderEnabled = false;
   await user.save();
   bot.sendMessage(chatId, `Your reminder has been disabled.`);
 }

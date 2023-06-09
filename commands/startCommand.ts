@@ -16,7 +16,7 @@ export default async function startCommand(
       telegramId: chatId,
       balance: 0,
       monthlyLimit: 0,
-      reminderTime: "",
+      reminderEnabled: false,
       categories: defaultCategories.map((category) => category._id),
     });
     await user.save();
