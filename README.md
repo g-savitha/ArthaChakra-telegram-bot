@@ -38,7 +38,7 @@ ArthaChakra is built using the following technologies:
 
 - Node.js: A JavaScript runtime environment
 - Typescript: A typed superset of JavaScript
-- Render.com: A platform to host the website
+- Railway.app: A platform to host the website
 - Telegram API: Interact with the Telegram bot platform
 - MongoDB: A NoSQL database for storing user data
 
